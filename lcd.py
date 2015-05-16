@@ -36,9 +36,9 @@ class LCDTime(Thread):
     def stop(self): 
       self.Terminated = True
 
-class LCDDate(Thread):
+class LCDTop(Thread):
 
-    
+    defectShow = False
 
     def __init__(self):
         Thread.__init__(self)
@@ -46,12 +46,32 @@ class LCDDate(Thread):
 
     def run(self):
         while not self.Terminated:
+            
+            with pingListLock:
+              flag = False
+              for ping in pingObjects:
+                flag = False
+                if ping.state == False:
+                  flag = True
+                  with lcdLock:
+                   lcd.setPosition(1, 0)
+                   lcd.writeString("                ")
+                   lcd.setPosition(1, 0)
+                   lcd.writeString(ping.ip+" NOK")
+                if flag == True :
+                  time.sleep(5)
+            
             with lcdLock:
+              if flag == True :
+                lcd.setPosition(1, 0)
+                lcd.writeString("                ")
+
               lcd.setPosition(1, 0)
               now = datetime.datetime.now()
               lcd.writeString(now.strftime("%a %d %b %Y"))
               
-            time.sleep(1)
+            time.sleep(5)
+
     def stop(self): 
       self.Terminated = True
 
@@ -120,23 +140,26 @@ class PingTask(Thread):
 lcd.command(lcd.CMD_Display_Control | lcd.OPT_Enable_Display)
 lcd.backLightOn()
 
-timeThread = LCDTime()
-dateThread = LCDDate()
-tempThread = LCDTemperature()
 pingTask = PingTask(filename="ip.txt")
+timeThread = LCDTime()
+tempThread = LCDTemperature()
+topThread = LCDTop()
 
-timeThread.start()
-dateThread.start()
-tempThread.start()
 pingTask.start()
+timeThread.start()
+tempThread.start()
+topThread.start()
 
 def signal_handler(signal, frame):
         print('Killing threads...')
         timeThread.stop()
-        dateThread.stop()
+        topThread.stop()
         tempThread.stop()
         pingTask.stop()
         print('OK')
+        with lcdLock:
+          lcd.clear()
+          lcd.backLightOff()
         sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -144,7 +167,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 timeThread.join()
-dateThread.join()
+topThread.join()
 tempThread.join()
 pingTask.join()
 
