@@ -57,7 +57,7 @@ class LCDTop(Thread):
                    lcd.setPosition(1, 0)
                    lcd.writeString("                ")
                    lcd.setPosition(1, 0)
-                   lcd.writeString(ping.ip+" NOK")
+                   lcd.writeString(ping.ip+" NOK ")
                 if flag == True :
                   time.sleep(5)
             
@@ -65,6 +65,10 @@ class LCDTop(Thread):
               if flag == True :
                 lcd.setPosition(1, 0)
                 lcd.writeString("                ")
+              else:
+                lcd.setPosition(1, 0)
+                lcd.writeString("Pings OK !      ")
+                time.sleep(5)
 
               lcd.setPosition(1, 0)
               now = datetime.datetime.now()
