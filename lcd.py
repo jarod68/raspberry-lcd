@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.append('./quick2wire-python-api')
+sys.path.append('/share/raspberry-lcd/quick2wire-python-api')
 
 from i2clibraries import i2c_lcd
 from threading import Thread, RLock
@@ -11,15 +11,16 @@ import time
 import os
 import signal
 import json
+import urllib.request
 
 # CONSTANTS :
 
 LCD_TIME_SLEEP_TIME_S = 0.10
 LCD_TOP_SLEEP_TIME_S = 5
 LCD_TEMPERATURE_SLEEP_TIME_S = 60
-NEW_PING_INTERVAL_TIME_S = 5
+NEW_PING_INTERVAL_TIME_S = 60
 
-IP_TO_PINGS = "ip.txt"
+IP_TO_PINGS = "/share/raspberry-lcd/ip.txt"
 
 # GLOBAL OBJECTS :
 
@@ -106,10 +107,11 @@ class LCDTemperature(Thread):
 
     def run(self):
         while not self.Terminated:
-          data = json.loads('{"iT":"22.0","oT":"16.0","iH":"44.0","iP":"1003.2"}')
+          data = json.loads(urllib.request.urlopen('http://192.168.1.177'))
+          #data = json.loads('{"iT":"22.0","oT":"16.0","iH":"44.0","iP":"1003.2"}')
           with lcdLock:
               lcd.setPosition(2, 10)
-              lcd.writeString(data['iT']+"°c")
+              lcd.writeString(data['iT']+"c")
 
          
           time.sleep(LCD_TEMPERATURE_SLEEP_TIME_S)
@@ -141,7 +143,7 @@ class PingTask(Thread):
         while not self.Terminated:
           with pingListLock:
             for ping in pingObjects:
-              response = os.system("ping -c 1 " + ping.ip)
+              response = os.system("ping -c 1 -w 1 " + ping.ip)
               if response == 0:
                   ping.state = True
               else:
