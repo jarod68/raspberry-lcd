@@ -4,19 +4,31 @@ import sys
 sys.path.append('./quick2wire-python-api')
 
 from i2clibraries import i2c_lcd
+from threading import Thread, RLock
 import datetime
 import random
-from threading import Thread, RLock
 import time
 import os
 import signal
 import json
+
+# CONSTANTS :
+
+LCD_TIME_SLEEP_TIME_S = 0.10
+LCD_TOP_SLEEP_TIME_S = 5
+LCD_TEMPERATURE_SLEEP_TIME_S = 60
+NEW_PING_INTERVAL_TIME_S = 5
+
+IP_TO_PINGS = "ip.txt"
+
+# GLOBAL OBJECTS :
 
 lcdLock = RLock()
 lcd = i2c_lcd.i2c_lcd(0x27,1, 2, 1, 0, 4, 5, 6, 7, 3)
 
 pingListLock = RLock()
 pingObjects = []
+
 
 class LCDTime(Thread):
 
@@ -31,7 +43,7 @@ class LCDTime(Thread):
               now = datetime.datetime.now()
               lcd.writeString(now.strftime("%H:%M:%S"))
 
-            time.sleep(0.10)
+            time.sleep(LCD_TIME_SLEEP_TIME_S)
 
     def stop(self): 
       self.Terminated = True
@@ -59,8 +71,9 @@ class LCDTop(Thread):
                    lcd.setPosition(1, 0)
                    lcd.writeString(ping.ip+" NOK ")
                 if flag == True :
-                  time.sleep(5)
+                  time.sleep(LCD_TOP_SLEEP_TIME_S)
             
+            wait = False
             with lcdLock:
               if flag == True :
                 lcd.setPosition(1, 0)
@@ -68,13 +81,17 @@ class LCDTop(Thread):
               else:
                 lcd.setPosition(1, 0)
                 lcd.writeString("Pings OK !      ")
-                time.sleep(5)
+                wait = True
+            
+            if wait == True:
+              time.sleep(LCD_TOP_SLEEP_TIME_S)
 
+            with lcdLock:
               lcd.setPosition(1, 0)
               now = datetime.datetime.now()
               lcd.writeString(now.strftime("%a %d %b %Y"))
               
-            time.sleep(5)
+            time.sleep(LCD_TOP_SLEEP_TIME_S)
 
     def stop(self): 
       self.Terminated = True
@@ -95,7 +112,7 @@ class LCDTemperature(Thread):
               lcd.writeString(data['iT']+"°c")
 
          
-          time.sleep(60)
+          time.sleep(LCD_TEMPERATURE_SLEEP_TIME_S)
 
     def stop(self): 
       self.Terminated = True
@@ -130,7 +147,7 @@ class PingTask(Thread):
               else:
                   ping.state = False
           
-          time.sleep(5)
+          time.sleep(NEW_PING_INTERVAL_TIME_S)
 
     def stop(self): 
       self.Terminated = True
@@ -144,7 +161,7 @@ class PingTask(Thread):
 lcd.command(lcd.CMD_Display_Control | lcd.OPT_Enable_Display)
 lcd.backLightOn()
 
-pingTask = PingTask(filename="ip.txt")
+pingTask = PingTask(filename=IP_TO_PINGS)
 timeThread = LCDTime()
 tempThread = LCDTemperature()
 topThread = LCDTop()
@@ -167,7 +184,6 @@ def signal_handler(signal, frame):
         sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
-
 
 
 timeThread.join()
