@@ -237,6 +237,42 @@ class LedManager(Thread):
         self.b.ChangeDutyCycle(dc)
         time.sleep(wait)
 
+    def funSequence(self):      
+      wait=0.05
+
+      for dc in range(0, 101, 5):
+        self.b.ChangeDutyCycle(dc)
+        self.g.ChangeDutyCycle(dc)
+        time.sleep(wait)
+
+      self.r.ChangeDutyCycle(100)
+      time.sleep(wait * 10)
+
+      self.r.ChangeDutyCycle(0)
+      self.b.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+
+      time.sleep(wait * 10)
+
+      self.r.ChangeDutyCycle(100)
+      self.b.ChangeDutyCycle(100)
+      self.g.ChangeDutyCycle(100)
+
+      time.sleep(wait * 20)
+
+      for dc in range(100, -1, -5):
+        self.g.ChangeDutyCycle(dc)
+        time.sleep(wait)
+
+      for dc in range(100, -1, -5):
+        self.r.ChangeDutyCycle(dc)
+        time.sleep(wait)
+
+      for dc in range(100, -1, -5):
+        self.b.ChangeDutyCycle(dc)
+        time.sleep(wait)
+
+
     def errorSequence(self):      
       wait=0.05
       for dc in range(0, 101, 5):
@@ -263,20 +299,25 @@ class LedManager(Thread):
         time.sleep(wait)
 
     def run(self):
-        while not self.Terminated:
+      count = 0
+      while not self.Terminated:
+        
+        if self.displayBootSeq == True:
+          self.bootSequence()
 
-          if self.displayBootSeq == True:
-            self.bootSequence()
+        if self.displayOKSeq == True:
+          self.okSequence()
 
-          if self.displayOKSeq == True:
-            self.okSequence()
+        if self.displayErrorSeq == True:
+          self.errorSequence()
 
-          if self.displayErrorSeq == True:
-            self.errorSequence()
+        if count == 10:
+          self.funSequence()
+          count = 0
+        else:
+          count+=1
 
-          
-          
-          time.sleep(0) # Yield the thread
+        time.sleep(0) # Yield the thread
 
     def displayErrorSequence(self, activated):
       self.displayErrorSeq = activated
