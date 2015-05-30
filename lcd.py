@@ -19,7 +19,7 @@ import RPi.GPIO as GPIO
 LCD_TIME_SLEEP_TIME_S = 0.10
 LCD_TOP_SLEEP_TIME_S = 5
 LCD_TEMPERATURE_SLEEP_TIME_S = 60
-NEW_PING_INTERVAL_TIME_S = 60
+NEW_PING_INTERVAL_TIME_S = 15
 
 IP_TO_PINGS = "/share/raspberry-lcd/ip.txt"
 
@@ -132,10 +132,18 @@ class PingTask(Thread):
         Thread.__init__(self)
         self.Terminated = False
         self.ledManager = ledManager
-        
-        with open(filename) as f:
-          with pingListLock:
-            for line in f:
+        self.filename = filename
+        # with open(filename) as f:
+        #   with pingListLock:
+        #     for line in f:
+        #       line = line.replace("\n", "")
+        #       pingObjects.append(PingObject(line))
+
+    def loadFile(self):
+      with open(self.filename) as f:
+        with pingListLock:
+          del pingObjects[:]
+          for line in f:
               line = line.replace("\n", "")
               pingObjects.append(PingObject(line))
 
@@ -155,6 +163,7 @@ class PingTask(Thread):
 
     def run(self):
         while not self.Terminated:
+          self.loadFile()
           with pingListLock:
             for ping in pingObjects:
               response = os.system("ping -c 1 -w 2 " + ping.ip)
