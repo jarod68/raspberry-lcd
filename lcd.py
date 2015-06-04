@@ -75,7 +75,6 @@ class LCDTop(Thread):
                     lcd.setPosition(1, 0)
                     lcd.writeString(ping.ip+" NOK ")
                     time.sleep(LCD_TOP_SLEEP_TIME_S)
-                    print (ping.ip+" NOK")
 
             with lcdLock:
               lcd.setPosition(1, 0)
@@ -237,6 +236,28 @@ class LedManager(Thread):
         self.b.ChangeDutyCycle(dc)
         time.sleep(wait)
 
+      self.r.ChangeDutyCycle(10)
+      self.g.ChangeDutyCycle(10)
+      time.sleep(0.75)
+      self.r.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+      time.sleep(0.05)
+      self.r.ChangeDutyCycle(25)
+      self.g.ChangeDutyCycle(25)
+      time.sleep(0.5)
+      self.r.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+      time.sleep(0.05)
+      self.r.ChangeDutyCycle(60)
+      self.g.ChangeDutyCycle(60)
+      time.sleep(0.25)
+      self.r.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+      time.sleep(0.05)
+      self.r.ChangeDutyCycle(90)
+      self.g.ChangeDutyCycle(90)
+      time.sleep(0.05)
+
     def funSequence(self):      
       wait=0.05
 
@@ -255,6 +276,30 @@ class LedManager(Thread):
       time.sleep(wait * 10)
 
       self.r.ChangeDutyCycle(100)
+      self.b.ChangeDutyCycle(100)
+      self.g.ChangeDutyCycle(100)
+
+      time.sleep(wait * 20)
+
+      self.r.ChangeDutyCycle(0)
+      self.b.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+
+      time.sleep(wait * 10)
+
+      self.r.ChangeDutyCycle(100)
+      self.b.ChangeDutyCycle(100)
+      self.g.ChangeDutyCycle(100)
+
+      time.sleep(wait * 20)
+
+      self.r.ChangeDutyCycle(0)
+      self.b.ChangeDutyCycle(0)
+      self.g.ChangeDutyCycle(0)
+
+      time.sleep(wait * 10)
+
+      self.r.ChangeDutyCycle(0)
       self.b.ChangeDutyCycle(100)
       self.g.ChangeDutyCycle(100)
 
