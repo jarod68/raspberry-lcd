@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.append('/share/raspberry-lcd/quick2wire-python-api')
-
+sys.path.append('/raspberry-lcd/quick2wire-python-api')
+sys.path.append('/raspberry-lcd')
+#import RPi_I2C_driver
 from i2clibraries import i2c_lcd
 from threading import Thread, RLock
 import datetime

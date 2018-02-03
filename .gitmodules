@@ -1,0 +1,6 @@
+[submodule "quick2wire-python-api"]
+	path = quick2wire-python-api
+	url = https://github.com/quick2wire/quick2wire-python-api.git
+[submodule "i2clibraries"]
+	path = i2clibraries
+	url = https://github.com/filipek92/i2clibraries.git
